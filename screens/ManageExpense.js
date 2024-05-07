@@ -1,20 +1,24 @@
 import { View, StyleSheet } from "react-native";
-import { useLayoutEffect } from "react";
+import { useContext, useLayoutEffect } from "react";
 import IconButton from "../components/UI/IconButton";
 import { GlobalStyles } from "../constants/styles";
 import Button from "../components/UI/Button";
+import { ExpensesContext } from "../store/expenses-context";
 
 function ManageExpense({ route, navigation }) {
+  const expensesCtx = useContext(ExpensesContext);
+
   const editedExpenseId = route.params?.expenseId;
-  const isEdititng = !!editedExpenseId;
+  const isEditing = !!editedExpenseId;
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: isEdititng ? "Edit Expense" : "Add Expense",
+      title: isEditing ? "Edit Expense" : "Add Expense",
     });
-  }, [navigation, isEdititng]);
+  }, [navigation, isEditing]);
 
-  function deleteExpense() {
+  function deleteExpenseHandler() {
+    expensesCtx.deleteExpense(editedExpenseId);
     navigation.goBack();
   }
 
@@ -23,6 +27,19 @@ function ManageExpense({ route, navigation }) {
   }
 
   function confirmHandler() {
+    if (isEditing) {
+      expensesCtx.updateExpense(editedExpenseId, {
+        description: "Test!!!!",
+        amount: 29.99,
+        date: new Date("2023-05-20"),
+      });
+    } else {
+      expensesCtx.addExpense({
+        description: "Test",
+        amount: 19.99,
+        date: new Date("2024-05-01"),
+      });
+    }
     navigation.goBack();
   }
 
@@ -33,16 +50,16 @@ function ManageExpense({ route, navigation }) {
           Cancel
         </Button>
         <Button style={styles.button} onPress={confirmHandler}>
-          {isEdititng ? "Update" : "Add"}
+          {isEditing ? "Update" : "Add"}
         </Button>
       </View>
-      {isEdititng && (
+      {isEditing && (
         <View style={styles.deleteContainer}>
           <IconButton
             icon="trash"
             color={GlobalStyles.colors.error500}
             size={36}
-            onPress={deleteExpense}
+            onPress={deleteExpenseHandler}
           />
         </View>
       )}
